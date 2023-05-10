@@ -3,7 +3,9 @@ using Amazon.Lambda.S3Events;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Util;
+using LoadS3Files.Data;
 using LoadS3Files.Service;
+using LoadS3Files.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Configuration;
@@ -63,20 +65,18 @@ public class Function
 
             try
             {
+                FileName = GetFileName(s3Event.Object.Key);
                 var response = S3Client.GetObjectAsync(s3Event.Bucket.Name, s3Event.Object.Key).Result;
 
+                string importedPath = PathConfiguration.GetPath("importedFiles", FileName);
                 var stream = response.ResponseStream;
 
 
                 var Imported = NutriFileService.ProcessNutriFile(stream, s3Event);
-                using(StreamReader reader = new StreamReader(response.ResponseStream))
-                {
-                    List<string> fileLines = new List<string>();
-                    while(!reader.EndOfStream)
-                    {
-                        context.Logger.LogLine(reader.ReadLine());
-                    }
-                }
+
+                if (Imported)
+                    NutriFileService.MoveFile(S3Client, s3Event.Bucket.Name, s3Event.Object.Key, importedPath);
+
             }
             catch (Exception e)
             {
@@ -90,6 +90,13 @@ public class Function
 
     }
 
+    private string GetFileName(string key)
+    {
+        string[] splitKey = key.Split('/');
+
+        return splitKey[splitKey.Length -1];
+    }
+
     private void Initialize()
     {
         var cultureInfo = new CultureInfo("en-US");
@@ -99,8 +106,9 @@ public class Function
         var serviceCollection = new ServiceCollection();
 
         var serviceProvider = new ServiceCollection()
-     .AddSingleton<NutriFileImporterService>()
-     .BuildServiceProvider();
+       .AddSingleton<NutriFileImporterService>()
+       .AddScoped<INutriRepository>(r => new NutriRepository("Data Source=DESKTOP-FECD75M\\SQLEXPRESS;Initial Catalog=Nutricionista;Trusted_Connection=True;"))
+       .BuildServiceProvider();
 
         NutriFileService = serviceProvider.GetService<NutriFileImporterService>();
     }

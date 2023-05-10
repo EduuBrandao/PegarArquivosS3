@@ -1,4 +1,6 @@
-﻿using Amazon.S3;
+﻿using Amazon.Lambda.Core;
+using Amazon.S3;
+using LoadS3Files.Data;
 using LoadS3Files.DTO;
 using System;
 using System.Collections.Generic;
@@ -13,12 +15,26 @@ namespace LoadS3Files.Service
     {
 
         private StreamReader _reader;
-
-        public NutriFileImporterService()
+        private readonly INutriRepository _nutriRepository;
+        public NutriFileImporterService(INutriRepository nutriRepository)
         {
-
+            _nutriRepository = nutriRepository;
         }
 
+        public void MoveFile(IAmazonS3 s3Client, string bucketName, string originPath, string destinyPath)
+        {
+            try
+            {
+                s3Client.CopyObjectAsync(bucketName, originPath, bucketName, destinyPath).Wait();
+                s3Client.DeleteObjectAsync(bucketName, originPath).Wait();
+            }
+            catch (Exception e)
+            {
+                LambdaLogger.Log($"Erro inesperado ao mover arquivo: {e.Message}");
+
+                throw;
+            }
+        }
 
         public bool ProcessNutriFile(Stream stream, S3Entity s3Event)
         {
@@ -54,6 +70,7 @@ namespace LoadS3Files.Service
 
                 var teste = nutriDTO;
 
+                CreateUser(nutriDTO);
                 _reader.Close();
                 _reader.Dispose();
             }
@@ -62,6 +79,11 @@ namespace LoadS3Files.Service
 
                 throw;
             }
+        }
+
+        private void CreateUser(NutriFileDTO nutriDTO)
+        {
+            _nutriRepository.CreateCustomer(nutriDTO.Customers.Select(x => x.Name).First());
         }
 
         private NutriCustomerFileDTO CreateNutriCustomerFileDTO(string fileLine)
