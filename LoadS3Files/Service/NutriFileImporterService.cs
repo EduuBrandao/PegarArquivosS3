@@ -1,7 +1,11 @@
-﻿using Amazon.Lambda.Core;
+﻿using Amazon;
+using Amazon.Lambda.Core;
 using Amazon.S3;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 using LoadS3Files.Data;
 using LoadS3Files.DTO;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,11 +44,34 @@ namespace LoadS3Files.Service
         {
             _reader = new StreamReader(stream, Encoding.GetEncoding("iso-8859-1"));
 
-            BuildFile();
+            NutriFileDTO nutriDTO =  BuildFile();
+
+
+            //metodo para alocar nossos dados em uma Fila
+            QueueUp(nutriDTO);
+
             return true;
         }
 
-        private void BuildFile()
+        private async void QueueUp(NutriFileDTO nutriDTO)
+        {
+            foreach (var customer in nutriDTO.Customers)
+            {
+                string json = JsonConvert.SerializeObject(customer);
+
+                var client = new AmazonSQSClient(RegionEndpoint.SAEast1);
+                var request = new SendMessageRequest
+                {
+                    QueueUrl = "https://sqs.sa-east-1.amazonaws.com/254632350317/NutriIsa",
+                    MessageBody = json
+                };
+
+                await client.SendMessageAsync(request);
+            }
+
+        }
+
+        private NutriFileDTO BuildFile()
         {
             try
             {
@@ -68,11 +95,11 @@ namespace LoadS3Files.Service
                     }
                 }
 
-                var teste = nutriDTO;
-
-                CreateUser(nutriDTO);
+               
                 _reader.Close();
                 _reader.Dispose();
+
+                return nutriDTO;
             }
             catch (Exception)
             {
@@ -81,9 +108,11 @@ namespace LoadS3Files.Service
             }
         }
 
-        private void CreateUser(NutriFileDTO nutriDTO)
+        private async void CreateUser(NutriFileDTO nutriDTO)
         {
             _nutriRepository.CreateCustomer(nutriDTO.Customers.Select(x => x.Name).First());
+
+
         }
 
         private NutriCustomerFileDTO CreateNutriCustomerFileDTO(string fileLine)
@@ -102,7 +131,9 @@ namespace LoadS3Files.Service
                 columns[10],
                 columns[11],
                 columns[12],
-                columns[13]
+                columns[13],
+                columns[14],
+                columns[15]
                      );
         }
     }

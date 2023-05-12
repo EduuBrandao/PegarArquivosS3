@@ -8,11 +8,13 @@ namespace LoadS3Files.DTO
 {
     public class NutriCustomerFileDTO
     {
-        public NutriCustomerFileDTO(string name, string peso, string altura,
-            string document, string address, string numberAddress, string district, string city, string state, string cep,
+        public NutriCustomerFileDTO(string name,string idade, string sexo, string peso, string altura,
+            string address, string numberAddress, string district, string city, string state, string cep, string document,    
             string phone1, string phone2, string email)
         {
             Name = name;
+            Sexo = sexo;
+            Idade = idade;
             Document = document;
             Address = address;
             NumberAddress = numberAddress;
@@ -27,6 +29,8 @@ namespace LoadS3Files.DTO
             Email = email;
         }
 
+        public string Sexo { get; set; }
+        public string Idade { get; set; }
         public string Peso { get; set; }
         public string Altura { get; set; }
         public string Name { get; set; }
