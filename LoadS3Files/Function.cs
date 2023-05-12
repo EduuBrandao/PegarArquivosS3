@@ -2,13 +2,11 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.S3Events;
 using Amazon.Runtime;
 using Amazon.S3;
-using Amazon.S3.Util;
 using LoadS3Files.Data;
 using LoadS3Files.Service;
 using LoadS3Files.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Configuration;
 using System.Globalization;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
