@@ -6,11 +6,7 @@ using Amazon.SQS.Model;
 using LoadS3Files.Data;
 using LoadS3Files.DTO;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using static Amazon.Lambda.S3Events.S3Event;
 
 namespace LoadS3Files.Service
