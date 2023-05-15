@@ -14,10 +14,10 @@ namespace LoadS3Files.DTO
         {
             Name = name;
             Sexo = sexo;
-            Idade = idade;
+            Idade = int.Parse(idade);
             Document = document;
             Address = address;
-            NumberAddress = numberAddress;
+            NumberAddress = int.Parse(numberAddress);
             District = district;
             City = city;
             State = state;
@@ -30,12 +30,12 @@ namespace LoadS3Files.DTO
         }
 
         public string Sexo { get; set; }
-        public string Idade { get; set; }
+        public int Idade { get; set; }
         public string Peso { get; set; }
         public string Altura { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public string NumberAddress { get; set; }
+        public int NumberAddress { get; set; }
         public string District { get; set; }
         public string City { get; set; }
         public string State { get; set; }
