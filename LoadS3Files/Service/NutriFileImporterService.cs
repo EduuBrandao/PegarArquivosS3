@@ -104,13 +104,6 @@ namespace LoadS3Files.Service
             }
         }
 
-        private async void CreateUser(NutriFileDTO nutriDTO)
-        {
-            _nutriRepository.CreateCustomer(nutriDTO.Customers.Select(x => x.Name).First());
-
-
-        }
-
         private NutriCustomerFileDTO CreateNutriCustomerFileDTO(string fileLine)
         {
             string[] columns = fileLine.Split(";");
